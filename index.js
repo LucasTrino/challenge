@@ -1,27 +1,60 @@
-const anagrama = (array) => {
-  const arrayLength = array.length;
-  let anagramsArr = [];
+const sortStringAlphabetically = (string) => {
+  return string.toLowerCase().split('').sort().join('');
+};
+
+const hasAnyEqualAnagram = (anagramsArray, targetString) => {
+  return anagramsArray.some(anagram => {
+    const sortedAnagram = sortStringAlphabetically(anagram);
+    return targetString === sortedAnagram;
+  });
+};
+
+function findAndAddAnagram(anagramsArr, anagramKey, element, elementSortedAlphabetically) {
+  for (let j = 0; j < anagramsArr.length; j++) {
+    const obj = anagramsArr[j];
+    const existingAnagramsElements = obj[anagramKey];
+    if (hasAnyEqualAnagram(existingAnagramsElements, elementSortedAlphabetically)) {
+      obj[anagramKey].push(element);
+      return true;
+    }
+  }
+  return false;
+}
+
+function findElementAnagram(arr, key, element, elementSortedAlphabetically) {
+  for (let k = 0; k < arr.length; k++) {
+    const element2 = arr[k][key];
+    const element2SortedAlphabetically = sortStringAlphabetically(element2);
+    if (element !== element2 && elementSortedAlphabetically === element2SortedAlphabetically) {
+      return true;
+    }
+  }
+  return false;
+}
+
+const findAnagrams = (json) => {
+  const parsedArray = JSON.parse(json), 
+  arrayLength = parsedArray.length, 
+  anagramKey = 'anagramas', 
+  firstKey = Object.keys(parsedArray[0])[0];
+
+  let anagramsArray = [];
 
   for (let i = 0; i < arrayLength; i++) {
-    const element = array[i].str;
+    const currentElement = parsedArray[i][firstKey];
+    const sortedElement = sortStringAlphabetically(currentElement);
 
-    for (let j = 0; j < arrayLength; j++) {
-      const element2 = array[j].str;
+    let found = findAndAddAnagram(anagramsArray, anagramKey, currentElement, sortedElement);
 
-      const convertString1 = element.toLowerCase().split('').sort().join('');
-      const convertString2 = element2.toLowerCase().split('').sort().join('');
+    if (!found) {
+      let hasAnagram = findElementAnagram(parsedArray, firstKey, currentElement, sortedElement, i);
 
-      if (i === j) continue;
-
-      if (convertString1 === convertString2) {
-
-        let obj = { 'anagramas': [element, element2] };
-
-        anagramsArr.push(obj);
+      if (hasAnagram) {
+        anagramsArray.push({ [anagramKey]: [currentElement] });
       }
     }
-    
   }
 
-  return anagramsArr
-}
+  return JSON.stringify(anagramsArray);
+};
+
