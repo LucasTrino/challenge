@@ -48,20 +48,8 @@ Como era esperado, minha saída criou objetos com arrays de valores duplicados, 
 ##### A saida ficou assim:
 
 > [
-&nbsp;&nbsp;{
-&nbsp;&nbsp;&nbsp;&nbsp;"anagramas": 
-&nbsp;&nbsp;&nbsp;&nbsp;[
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"amor",
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"roma"
-&nbsp;&nbsp;&nbsp;&nbsp;]
-&nbsp;&nbsp;},
-&nbsp;&nbsp;{
-&nbsp;&nbsp;&nbsp;&nbsp;"anagramas": 
-&nbsp;&nbsp;&nbsp;&nbsp;[
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"roma",
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"amor"
-&nbsp;&nbsp;&nbsp;&nbsp;]
-&nbsp;&nbsp;},
+&nbsp;&nbsp;{"anagramas": ["amor","roma"]},
+&nbsp;&nbsp;{"anagramas": ["roma","amor"]},
 &nbsp;&nbsp;[...]
 ]
 
@@ -73,6 +61,34 @@ Agora, para o próximo commit, eu preciso:
 
 * Tambem posso fazer alguns ajustes, como definir 'entitites' como a chave de cada objeto do array a ser retornado, no caso, 'anagramas', em uma variavel, e tambem selecionar a chave na qual estão as strings em cada objeto de entrada com **Object.prototype.keys()**.
 
-* Posso usar um combinação de **array.prototype.find()** e **array.prototype.findIndex()**, ou talvez um **array.prototype.some()** para testar se já existe dentro de 'anagramsArr' (valor a ser retornado), um objeto que contenha um array com um anagrama do valor que esta sendo iterado no segundo **for**, dessa forma consigo ajuster a saida e não limitar o array de anagramas de dois valores.
+* Posso usar um combinação de **array.prototype.find()** e **array.prototype.findIndex()**, ou talvez um **array.prototype.some()** para testar se já existe dentro de 'anagramsArr' (valor a ser retornado), um objeto que contenha um array com um anagrama do valor que esta sendo iterado no segundo **for**, dessa forma consigo ajustar a saida e não limitar o array de anagramas de dois valores.
 
-* Posso ir aplicando os principios do SOLID, pois aumentando as condicionais e declarando mais variaveis de controle para isso, é mais fácil ir particionando o código seguindo a modularidade e função unica, além de definir nomes melhores para as variaveis e parametros seguindo o ISP.
+* Posso ir aplicando os principios do SOLID - dentro do possivel, claro - pois aumentando as condicionais e declarando mais variaveis de controle para isso, é mais fácil ir particionando o código seguindo a modularidade e função unica, além de definir nomes melhores para as variaveis e parametros seguindo o ISP.
+
+---
+
+#### commit-6c8e92d:
+Nesse commit eu comecei mudando os nomes das variaveis e parametros, e deixando de lado modularização, adicionando as regras na propria função principal - a findAnagrams(). 
+Depois de definir as regras e 'testar', garantindo que a saída estava correta, eu parti para modularizar o código e reduzir o tamanho de findAnagrams(). Eu não segui 100% o ISP nesse caso, pois, nomear as funções de acordo com o contexto do que foi pedido - anagramas -, ajuda as explicações e entendimento, além disso, tambem não sigo aqui o principio de responsabilidade unica, dado o escopo reduzido. 
+Então, ja 'modularizado', vou seguir minhas explicações segundo as funções criadas, começando pela principal - findAnagrams() e ir explicando as outras na ordem em que aparecem nela.
+* Comecei declarando quatro variaveis usando o **sigle var** pattern.
+* Defini 'anagramKey' e 'firstKey' para aumentar a flexibilidade do formato do JSON de entrada e o de saida.
+* A primeira coisa que eu precisei fazer foi pegar o valor da string do primeiro objeto do array de entrada e aplicar a 'conversão' com **toLowerCase()**, **split()**, **sort()** e **join()**, junto a isso, já modularizei essa regra em um função chamada 'sortStringAlphabetically', e coloquei esse valor dentro de 'currentElement'.
+* Depois precisei ajustar o retorno e corrigir algumas falhas do 'rascunho' do primeiro commit como, por exemplo, criar um objetos com arrays de valores semelhantes e que tinham um limite de dois valores. Para isso, precisei interar tambem sobre 'anagramsArray', o array que servira de retorno. Então, criei outro **for** loop para percorrer sobre ele e procurar um anagrama do 'currentElement' já existente. Então, criei a função 'findAndAddAnagram()'. Em cada objeto em 'anagramsArray', vou procurar por um valor do array que é um anagrama do elemento atual: 'currentElement' e fazer a comparação. 
+   * Para iterar sobre os valores, usei **array.prototype.some()** com um callback que vai organizar o valor iterado usando a função 'sortStringAlphabetically()' e retornando o booleano atraves do '==='.
+   * A lógica acima, coloquei dentro de outra função chamada 'hasAnyEqualAnagram'.
+   * Caso exista uma anagrama que corresponda ao 'currentElement', eu adiciono 'currentElement' no array do objeto que esta sendo iterado em 'anagramsArray' e retorno um valor booleano: true, caso o exista uma correspondencia. false, caso não exista ou 'anagramsArray' esteja vazio - a principio adicionei um **if** para testar o **length** de 'anagramsArray', mas quando fui criar a função 'findAndAddAnagram()' me dei conta que caso ele seja igual a zero, ele vai falhar na condição do **for** e o loop não irá ser executado.
+   * Criei uma variavel com o nome 'found', pois caso o retorno de 'findAndAddAnagram()' seja false, preciso adicionar o principio do **'iterating through adjacent elements'** mencionado anteriormente, sobre as regras especuladas no primeiro 'commit'.
+* Para tanto - aplicar o **'iterating through adjacent elements'** - criei a função 'findElementAnagram()', que é uma refatoração do 'rascunho' do 'commit' anterior. Agora ela retorna um booleano - true caso ache um anagrama adjacente ao 'currentElement', reorganizado com a função 'sortStringAlphabetically()', no array de entrada, e false, caso não encontre. Coloco esse valor de retorno na variavel 'hasAnagram' que me serviu como variavel de controle para fazer um **push()** de um novo valor em 'anagramsArray' caso essa esteja vazia, ou ainda não exista um objeto que contenha um array já com um anagrama de 'currentElement'.
+* Adicionei o **parse()** e o **stringify()**.
+
+#####A saida ficou assim:
+
+> '[
+&nbsp;&nbsp;{"anagramas": ["amor","roma","ramo"]},
+&nbsp;&nbsp;{"anagramas": ["padre","pedra"]},
+&nbsp;&nbsp;{"anagramas": ["bolo","lobo"]},
+&nbsp;&nbsp;{"anagramas": ["rota","ator"]}
+]'
+
+Obs: Esqueci de adicionar a explanação acima no commit correspondente.
