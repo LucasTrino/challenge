@@ -33,28 +33,60 @@ function findElementAnagram(arr, key, element, elementSortedAlphabetically) {
 }
 
 const findAnagrams = (json) => {
-  const parsedArray = JSON.parse(json), 
-  arrayLength = parsedArray.length, 
-  anagramKey = 'anagramas', 
-  firstKey = Object.keys(parsedArray[0])[0];
+  try {
 
-  let anagramsArray = [];
+    const parsedArray = JSON.parse(json);
 
-  for (let i = 0; i < arrayLength; i++) {
-    const currentElement = parsedArray[i][firstKey];
-    const sortedElement = sortStringAlphabetically(currentElement);
+    //defensive 1
+    if (!Array.isArray(parsedArray)) {
+      throw new Error('JSON data is not an array');
+    }
 
-    let found = findAndAddAnagram(anagramsArray, anagramKey, currentElement, sortedElement);
+    const arrayLength = parsedArray.length;
+    const anagramKey = 'anagramas';
 
-    if (!found) {
-      let hasAnagram = findElementAnagram(parsedArray, firstKey, currentElement, sortedElement, i);
+    //defensive 2
+    if (arrayLength === 0) {
+      return JSON.stringify([]);
+    }
 
-      if (hasAnagram) {
-        anagramsArray.push({ [anagramKey]: [currentElement] });
+    const firstKey = Object.keys(parsedArray[0])[0];
+
+    let anagramsArray = [];
+
+    //defensive 3
+    for (let i = 1; i < arrayLength; i++) {
+      const currentKey = Object.keys(parsedArray[i])[0];
+      if (currentKey !== firstKey) {
+        throw new Error(`Keys in the objects are not consistent. Expected '${firstKey}', but found '${currentKey}' at index ${i}`);
       }
     }
+
+    for (let i = 0; i < arrayLength; i++) {
+      const currentElement = parsedArray[i][firstKey];
+
+      //defensive 4
+      if (typeof currentElement === 'undefined' || currentElement === null) {
+        console.warn(`Element at index ${i} is undefined or null.`);
+        continue;
+      }
+
+      const sortedElement = sortStringAlphabetically(currentElement);
+
+      let found = findAndAddAnagram(anagramsArray, anagramKey, currentElement, sortedElement);
+
+      if (!found) {
+        let hasAnagram = findElementAnagram(parsedArray, firstKey, currentElement, sortedElement, i);
+
+        if (hasAnagram) {
+          anagramsArray.push({ [anagramKey]: [currentElement] });
+        }
+      }
+    }
+
+    return JSON.stringify(anagramsArray);
+  } catch (error) {
+    console.error('An error occurred:', error.message);
+    return JSON.stringify({ error: error.message });
   }
-
-  return JSON.stringify(anagramsArray);
 };
-
