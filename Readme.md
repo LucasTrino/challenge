@@ -151,4 +151,14 @@ No proximo commit vou corrigir alguns pontos do commit anterior e 'modularizar' 
 
 ---
 
+#### commit-e6436dc:
 
+Nesse commit 'modularizei' a função de validação do formato do JSON de entrada em uma função chamada 'validateJsonFormat()'. Fiz algumas alterações, que seguem abaixo:
+
+- Adicionei um bloco para testar o formato do JSON é constituído de um objeto que tenha um par de chave e valor `{"str": "amor"}`, e que o valor é necessariamente uma string.
+
+![defensive 5](./imgs/defensive%205.png)
+
+![defensive 6](./imgs/defensive%206.png)
+
+- Além disso, relendo o desafio me atentei que a entrada deveria ser um array no formato json, então fiz as alterações para isso.
