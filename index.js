@@ -32,51 +32,74 @@ function findElementAnagram(arr, key, element, elementSortedAlphabetically) {
   return false;
 }
 
-const findAnagrams = (json) => {
+const validateJsonFormat = (json) => {
   try {
+    const arrayJson = JSON.parse(JSON.stringify(json)),
+      firstKey = Object.keys(arrayJson[0])[0];
 
-    const parsedArray = JSON.parse(json);
 
-    //defensive 1
-    if (!Array.isArray(parsedArray)) {
+    if (!Array.isArray(arrayJson)) {
       throw new Error('JSON data is not an array');
     }
 
-    const arrayLength = parsedArray.length;
-    const anagramKey = 'anagramas';
-
-    //defensive 2
-    if (arrayLength === 0) {
-      return JSON.stringify([]);
+    if (arrayJson.length === 0) {
+      throw new Error('JSON array is empty');
     }
 
-    const firstKey = Object.keys(parsedArray[0])[0];
+    //defensive 5
+    for (let i = 0; i < arrayJson.length; i++) {
+      const obj = arrayJson[i];
+
+      if (typeof obj !== 'object' || Object.keys(obj).length !== 1) {
+        throw new Error('JSON array contains elements that do not match the required format');
+      }
+
+      const value = obj[Object.keys(obj)[0]];
+
+      //defensive 6
+      if (typeof value !== 'string') {
+        throw new Error('Value associated with the key is not a string');
+      }
+
+      const currentKey = Object.keys(arrayJson[i])[0];
+
+      if (currentKey !== firstKey) {
+        throw new Error('Keys in objects within the JSON array are not consistent');
+      }
+
+    }
+
+    return true;
+
+  } catch (error) {
+    console.error('Error validating JSON format:', error.message);
+    return false;
+  }
+};
+
+const findAnagrams = (json) => {
+  try {
+
+    if (!validateJsonFormat(json)) {
+      throw new Error('Invalid JSON format');
+    }
+
+    const arrayJson = JSON.parse(JSON.stringify(json)),
+      arrayLength = arrayJson.length,
+      anagramKey = 'anagramas',
+      firstKey = Object.keys(arrayJson[0])[0];
 
     let anagramsArray = [];
 
-    //defensive 3
-    for (let i = 1; i < arrayLength; i++) {
-      const currentKey = Object.keys(parsedArray[i])[0];
-      if (currentKey !== firstKey) {
-        throw new Error(`Keys in the objects are not consistent. Expected '${firstKey}', but found '${currentKey}' at index ${i}`);
-      }
-    }
-
     for (let i = 0; i < arrayLength; i++) {
-      const currentElement = parsedArray[i][firstKey];
-
-      //defensive 4
-      if (typeof currentElement === 'undefined' || currentElement === null) {
-        console.warn(`Element at index ${i} is undefined or null.`);
-        continue;
-      }
+      const currentElement = arrayJson[i][firstKey];
 
       const sortedElement = sortStringAlphabetically(currentElement);
 
       let found = findAndAddAnagram(anagramsArray, anagramKey, currentElement, sortedElement);
 
       if (!found) {
-        let hasAnagram = findElementAnagram(parsedArray, firstKey, currentElement, sortedElement, i);
+        let hasAnagram = findElementAnagram(arrayJson, firstKey, currentElement, sortedElement, i);
 
         if (hasAnagram) {
           anagramsArray.push({ [anagramKey]: [currentElement] });
@@ -84,7 +107,7 @@ const findAnagrams = (json) => {
       }
     }
 
-    return JSON.stringify(anagramsArray);
+    return anagramsArray;
   } catch (error) {
     console.error('An error occurred:', error.message);
     return JSON.stringify({ error: error.message });
